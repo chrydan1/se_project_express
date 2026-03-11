@@ -32,6 +32,7 @@ app.use((req, res) => {
   res.status(HTTP_STATUS.NOT_FOUND).send({ message: ERROR_MESSAGES.NOT_FOUND });
 });
 
-app.listen(PORT, () => {});
 
 app.use(errorHandler);
+
+app.listen(PORT, () => {});
