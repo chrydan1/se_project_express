@@ -18,19 +18,24 @@ const getUsers = (req, res, next) => {
 const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
 
-  bcrypt.hash(password, 10)
-    .then((hash) => User.create({
-      name,
-      avatar,
-      email,
-      password: hash,
-    }))
-    .then((user) => res.status(201).send({
-      name: user.name,
-      avatar: user.avatar,
-      email: user.email,
-      _id: user._id,
-    }))
+  bcrypt
+    .hash(password, 10)
+    .then((hash) =>
+      User.create({
+        name,
+        avatar,
+        email,
+        password: hash,
+      })
+    )
+    .then((user) =>
+      res.status(201).send({
+        name: user.name,
+        avatar: user.avatar,
+        email: user.email,
+        _id: user._id,
+      })
+    )
     .catch((err) => {
       if (err.code === 11000) {
         return next(new ConflictError("Email already exists"));
@@ -52,18 +57,18 @@ const login = (req, res, next) => {
     return next(new BadRequestError("Email and password are required"));
   }
 
-  User.findUserByCredentials(email, password)
+  return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
 
-      res.send({ token });
+      return res.send({ token });
     })
     .catch(() => {
       const err = new Error("Incorrect email or password");
       err.statusCode = 401;
-      next(err);
+      return next(err);
     });
 };
 
