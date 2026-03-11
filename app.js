@@ -1,5 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
+const errorHandler = require("./middlewares/errorHandler");
 
 const { PORT = 3001 } = process.env;
 const app = express();
@@ -15,10 +17,7 @@ const routes = require("./routes");
 
 app.use(express.json());
 
-app.use((req, res, next) => {
-  req.user = { _id: "699d1d36138d9fd2b4269dff" };
-  next();
-});
+app.use(cors());
 
 app.use(routes);
 
@@ -27,3 +26,5 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, () => {});
+
+app.use(errorHandler);

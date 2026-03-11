@@ -1,6 +1,7 @@
 const clothingItem = require("../models/clothingitem");
+const BadRequestError = require("../errors/BadRequestError");
 
-const createItem = (req, res) => {
+const createItem = (req, res, next) => {
 
   const { name, weather, imageUrl } = req.body;
 
@@ -11,9 +12,10 @@ const createItem = (req, res) => {
     })
     .catch((e) => {
   if (e.name === "ValidationError") {
-    return res.status(400).send({ message: e.message });
+    return next(new BadRequestError(e.message));
   }
-  return res.status(500).send({ message: "Error from creating item" });
+
+  return next(e);
 });
 };
 
@@ -43,9 +45,15 @@ const deleteItem = (req, res) => {
   const { itemId } = req.params;
 
   clothingItem
-    .findByIdAndDelete(itemId)
+    .findById(itemId)
     .orFail(() => new Error("NotFound"))
-    .then((item) => res.status(200).send(item))
+    .then((item) => {
+  if (item.owner.toString() !== req.user._id) {
+    return res.status(403).send({ message: "Forbidden" });
+  }
+
+  return item.deleteOne().then(() => res.status(200).send(item));
+})
     .catch((e) => {
       if (e.name === "CastError") {
         return res.status(400).send({ message: "Invalid item id" });
@@ -53,7 +61,7 @@ const deleteItem = (req, res) => {
       if (e.message === "NotFound") {
         return res.status(404).send({ message: "Item not found" });
       }
-      return res.status(500).send({ message: "Error from deleteing item" });
+      return res.status(500).send({ message: "Error from deleting item" });
     });
 };
 
