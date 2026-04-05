@@ -6,6 +6,8 @@ const BadRequestError = require("../errors/BadRequestError");
 const NotFoundError = require("../errors/NotFoundError");
 
 const User = require("../models/user");
+const ClothingItem = require("../models/clothingitem");
+const defaultClothingItems = require("../utils/defaultClothingItems");
 
 // GET /users
 const getUsers = (req, res, next) => {
