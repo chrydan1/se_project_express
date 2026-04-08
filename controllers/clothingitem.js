@@ -1,8 +1,9 @@
 const clothingItem = require("../models/clothingitem");
 const BadRequestError = require("../errors/BadRequestError");
+const NotFoundError = require("../errors/NotFoundError");
+const ForbiddenError = require("../errors/ForbiddenError");
 
 const createItem = (req, res, next) => {
-
   const { name, weather, imageUrl } = req.body;
 
   clothingItem
@@ -10,103 +11,100 @@ const createItem = (req, res, next) => {
     .then((item) => {
       res.send({ data: item });
     })
-    .catch((e) => {
-  if (e.name === "ValidationError") {
-    return next(new BadRequestError(e.message));
-  }
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        return next(new BadRequestError(err.message));
+      }
 
-  return next(e);
-});
-};
-
-const getItems = (req, res) => {
-  clothingItem
-    .find({})
-    .then((items) => res.status(200).send(items))
-    .catch((e) => {
-      res.status(500).send({ message: "Error from getting items", e });
+      return next(err);
     });
 };
 
-const updateItem = (req, res) => {
+const getItems = (req, res, next) => {
+  clothingItem
+    .find({})
+    .then((items) => res.status(200).send(items))
+    .catch(next);
+};
+
+const updateItem = (req, res, next) => {
   const { itemId } = req.params;
   const { imageURL } = req.body;
 
   clothingItem
-    .findByIdAndUpdate(itemId, { $set: { imageURL } })
-    .orFail()
+    .findByIdAndUpdate(itemId, { $set: { imageURL } }, { new: true })
+    .orFail(() => new NotFoundError("Item not found"))
     .then((item) => res.status(200).send({ data: item }))
-    .catch((e) => {
-      res.status(500).send({ message: "Error from updating item", e });
+    .catch((err) => {
+      if (err.name === "CastError") {
+        return next(new BadRequestError("Invalid item id"));
+      }
+
+      return next(err);
     });
 };
 
-const deleteItem = (req, res) => {
+const deleteItem = (req, res, next) => {
   const { itemId } = req.params;
 
   clothingItem
     .findById(itemId)
-    .orFail(() => new Error("NotFound"))
+    .orFail(() => new NotFoundError("Item not found"))
     .then((item) => {
-  if (item.owner.toString() !== req.user._id) {
-    return res.status(403).send({ message: "Forbidden" });
-  }
+      if (item.owner.toString() !== req.user._id) {
+        return next(new ForbiddenError("Forbidden"));
+      }
 
-  return item.deleteOne().then(() => res.status(200).send(item));
-})
-    .catch((e) => {
-      if (e.name === "CastError") {
-        return res.status(400).send({ message: "Invalid item id" });
+      return item.deleteOne().then(() => res.status(200).send(item));
+    })
+    .catch((err) => {
+      if (err.name === "CastError") {
+        return next(new BadRequestError("Invalid item id"));
       }
-      if (e.message === "NotFound") {
-        return res.status(404).send({ message: "Item not found" });
-      }
-      return res.status(500).send({ message: "Error from deleting item" });
+
+      return next(err);
     });
 };
 
-const likeItem = (req, res) => {
+const likeItem = (req, res, next) => {
   const { itemId } = req.params;
 
-  clothingItem.findByIdAndUpdate(
-    itemId,
-    { $addToSet: { likes: req.user._id } },
-    { new: true }
-  )
-  .then((item) => (
-  item
-    ? res.send(item)
-    : res.status(404).send({ message: "Item not found" })
-))
-  .catch((e) => {
-  if (e.name === "CastError") {
-    return res.status(400).send({ message: "Invalid item id" });
-  }
-  return res.status(500).send({ message: "Error liking item" });
-});
+  clothingItem
+    .findByIdAndUpdate(
+      itemId,
+      { $addToSet: { likes: req.user._id } },
+      { new: true }
+    )
+    .orFail(() => new NotFoundError("Item not found"))
+    .then((item) => res.send(item))
+    .catch((err) => {
+      if (err.name === "CastError") {
+        return next(new BadRequestError("Invalid item id"));
+      }
+
+      return next(err);
+    });
 };
 
-const dislikeItem = (req, res) => {
+const dislikeItem = (req, res, next) => {
   const { itemId } = req.params;
 
-  clothingItem.findByIdAndUpdate(
-    itemId,
-    { $pull: { likes: req.user._id } },
-    { new: true }
-  )
-  .then((item) => (
-  item
-    ? res.send(item)
-    : res.status(404).send({ message: "Item not found" })
-))
-  .catch((e) => {
-  if (e.name === "CastError") {
-    return res.status(400).send({ message: "Invalid item id" });
-  }
-  return res.status(500).send({ message: "Error disliking item" });
-});
-};
+  clothingItem
+    .findByIdAndUpdate(
+      itemId,
+      { $pull: { likes: req.user._id } },
+      { new: true }
+    )
+    .orFail(() => new NotFoundError("Item not found"))
+    .then((item) => res.send(item))
+    .catch((err) => {
+      if (err.name === "CastError") {
+        return next(new BadRequestError("Invalid item id"));
+      }
 
+      return next(err);
+    });
+};
 
 module.exports = {
   createItem,
