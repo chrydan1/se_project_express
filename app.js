@@ -29,11 +29,12 @@ app.use((req, res, next) => {
 
 app.use(routes);
 
+app.use(errors());
+
 app.use((req, res) => {
   res.status(HTTP_STATUS.NOT_FOUND).send({ message: ERROR_MESSAGES.NOT_FOUND });
 });
 
-app.use(errors());
 app.use(errorHandler);
 
 app.listen(PORT, () => {});
