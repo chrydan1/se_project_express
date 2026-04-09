@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const { errors } = require("celebrate");
 const errorHandler = require("./middlewares/errorHandler");
 
 const { PORT = 3001 } = process.env;
@@ -32,7 +33,7 @@ app.use((req, res) => {
   res.status(HTTP_STATUS.NOT_FOUND).send({ message: ERROR_MESSAGES.NOT_FOUND });
 });
 
-
+app.use(errors());
 app.use(errorHandler);
 
 app.listen(PORT, () => {});
