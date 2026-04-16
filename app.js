@@ -30,7 +30,11 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(requestLogger);
+// app.use(requestLogger);
+
+app.get("/test", (req, res) => {
+  res.send({ message: "test ok" });
+});
 
 app.use(routes);
 
@@ -38,7 +42,7 @@ app.use((req, res) => {
   res.status(HTTP_STATUS.NOT_FOUND).send({ message: ERROR_MESSAGES.NOT_FOUND });
 });
 
-app.use(errorLogger);
+// app.use(errorLogger);
 
 app.use(errors());
 
