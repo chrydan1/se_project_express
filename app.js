@@ -30,6 +30,15 @@ app.get("/crash-test", () => {
 
 // CRASH TEST
 
+// Temporary middleware for testing (required by automated tests)
+// TODO: Remove after review when using real auth middleware
+app.use((req, res, next) => {
+  req.user = {
+    _id: "5d8b8592978f8bd833ca8133",
+  };
+  next();
+});
+
 
 app.use(routes);
 
