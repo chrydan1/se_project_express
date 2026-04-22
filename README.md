@@ -9,7 +9,18 @@ The back-end project is focused on creating a server for the WTWR application. Y
 Before committing your code, make sure you edit the file `sprint.txt` in the root folder. The file `sprint.txt` should contain the number of the sprint you're currently working on. For ex. 12
 
 
+ ## Project's domane name
+ https://www.chrydan-wtwr.jumpingcrab.com/
+
+
+ ## Link frontend repo
+ https://github.com/chrydan1/se_project_react.git
+
+
+
  ## Project Pitch Video
  
- Check out [this video](https://drive.google.com/file/d/1GnW7WLEs7t9Fo6qSw5HsqVC5gN8f7OaB/view?usp=drive_link), where I describe my 
+ Check out [this video](https://drive.google.com/file/d/1LuXJULQgl792IfI4HAxt3WC4Ct-btlyq/view?usp=sharing), where I describe my 
  project and some challenges I faced while building it.
+
+
