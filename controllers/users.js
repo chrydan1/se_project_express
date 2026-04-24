@@ -4,6 +4,7 @@ const { JWT_SECRET } = require("../utils/config");
 const ConflictError = require("../errors/ConflictError");
 const BadRequestError = require("../errors/BadRequestError");
 const NotFoundError = require("../errors/NotFoundError");
+const UnauthorizedError = require("../utils/errors/UnauthorizedError");
 
 const User = require("../models/user");
 
@@ -66,11 +67,7 @@ const login = (req, res, next) => {
 
       return res.send({ token });
     })
-    .catch(() => {
-      const err = new Error("Incorrect email or password");
-      err.statusCode = 401;
-      return next(err);
-    });
+    .catch(() => next(new UnauthorizedError("Incorrect email or password")));
 };
 
 // GET /users/me
